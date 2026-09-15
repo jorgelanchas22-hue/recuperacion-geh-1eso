@@ -91,7 +91,7 @@
                 <div id="student-selector-box" class="flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-2xl">
                     <span class="text-xs">👤</span>
                     <select id="active-student-select" onchange="changeActiveStudent(this.value)" class="bg-transparent text-xs font-bold text-amber-300 focus:outline-none cursor-pointer">
-                        <option value="guest" class="bg-slate-900 text-white">Modo Invitado / Demo</option>
+                        <option value="guest" class="bg-slate-900 text-white">Selecciona tu nombre</option>
                     </select>
                 </div>
 
@@ -777,7 +777,7 @@
         function renderStudentSelector() {
             const select = document.getElementById('active-student-select');
             const entries = Object.entries(state.students || {});
-            select.innerHTML = '<option value="guest" class="bg-slate-900 text-white">Modo Invitado / Demo</option>' +
+            select.innerHTML = '<option value="guest" class="bg-slate-900 text-white">Selecciona tu nombre</option>' +
                 entries.map(([id, s]) => `<option value="${id}" class="bg-slate-900 text-white">${escapeHTML(s.code || '')} · ${escapeHTML(s.name || '')}</option>`).join('');
             if (activeStudentId !== 'guest' && !state.students[activeStudentId]) setActiveStudent('guest');
             select.value = activeStudentId;
