@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperación GeH 1.º ESO · Salesianos Triana</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuentes Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    colors: {
+                        geo: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985' },
+                        pre: { 50: '#fffbeb', 100: '#fef3c7', 500: '#f59e0b', 600: '#d97706', 700: '#b45309', 800: '#92400e' },
+                        ant: { 50: '#faf5ff', 100: '#f3e8ff', 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce', 800: '#6b21a8' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos de Impresión en Papel */
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; font-size: 10.5pt; }
+            .unit-card { break-inside: avoid; page-break-after: always; border: 1px solid #bbb !important; box-shadow: none !important; margin-bottom: 2rem; }
+            .print-write-line { border-bottom: 1px dotted #777; height: 1.8rem; margin-top: 0.5rem; }
+            .view-section { display: block !important; }
+            nav, header, footer, button, .interactive-controls, #toast-container, .modal-backdrop { display: none !important; }
+        }
+        .print-only { display: none; }
+        /* Scrollbar suave */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Notificaciones flotantes (Toasts) sin usar alert() -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none no-print"></div>
+
+    <!-- Header Principal -->
+    <header class="bg-slate-900 text-white shadow-xl sticky top-0 z-50 border-b border-slate-800 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+            
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-tr from-amber-500 via-indigo-500 to-sky-500 p-2.5 rounded-2xl shadow-lg shadow-indigo-500/20">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="font-display font-bold text-base sm:text-lg tracking-tight">GeoHist · Pendientes 2.º ESO</h1>
+                            <span class="text-[10px] uppercase font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">LOMLOE Andalucía</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Recuperación de Geografía e Historia de 1.º ESO · Salesianos Triana</p>
+                    </div>
+                </div>
+
+                <!-- Selector de Rol: Alumno vs Profesor -->
+                <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs">
+                    <button id="role-student-btn" onclick="setAppRole('student')" class="px-3 py-1 rounded-lg font-bold transition-all bg-indigo-600 text-white shadow-sm">
+                        🎒 Alumno
+                    </button>
+                    <button id="role-teacher-btn" onclick="setAppRole('teacher')" class="px-3 py-1 rounded-lg font-bold transition-all text-slate-400 hover:text-white flex items-center gap-1.5">
+                        👨‍🏫 Profesor
+                        <span id="teacher-auth-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Controles de Estado de Usuario / Chromebook -->
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                <!-- Info de sesión de profesor/a activa -->
+                <div id="teacher-session-info" class="hidden flex items-center gap-2 bg-indigo-950/80 border border-indigo-700/80 px-3 py-1.5 rounded-2xl text-xs">
+                    <span class="font-bold text-indigo-200 text-[11px]">👨‍🏫 Sesión de profesor/a activa</span>
+                    <button onclick="logoutTeacher()" title="Cerrar sesión de profesor" class="text-slate-400 hover:text-rose-400 font-bold ml-1">✕</button>
+                </div>
+
+                <!-- Selector de Alumno Activo -->
+                <div id="student-selector-box" class="flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-2xl">
+                    <span class="text-xs">👤</span>
+                    <select id="active-student-select" onchange="changeActiveStudent(this.value)" class="bg-transparent text-xs font-bold text-amber-300 focus:outline-none cursor-pointer">
+                        <option value="guest" class="bg-slate-900 text-white">Modo Invitado / Demo</option>
+                    </select>
+                </div>
+
+                <!-- Botón Imprimir -->
+                <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm">
+                    🖨️ <span class="hidden sm:inline">Imprimir / PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barra de Navegación por Pestañas -->
+    <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-40 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between overflow-x-auto py-2.5 gap-2 scrollbar-none">
+            <div class="flex items-center gap-2 min-w-max" id="nav-tabs-container">
+                <button onclick="switchTab('pasaporte')" id="tab-btn-pasaporte" class="nav-tab-btn px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 bg-indigo-600 text-white shadow-sm transition-all">
+                    🎒 Mi Pasaporte
+                </button>
+                <button onclick="switchTab('bloque3')" id="tab-btn-bloque3" class="nav-tab-btn px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 text-slate-600 hover:bg-slate-100 transition-all">
+                    🌍 1. Geografía Física
+                </button>
+                <button onclick="switchTab('bloque1')" id="tab-btn-bloque1" class="nav-tab-btn px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 text-slate-600 hover:bg-slate-100 transition-all">
+                    🦴 2. La Prehistoria
+                </button>
+                <button onclick="switchTab('bloque2')" id="tab-btn-bloque2" class="nav-tab-btn px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 text-slate-600 hover:bg-slate-100 transition-all">
+                    🏛️ 3. El Mundo Antiguo
+                </button>
+                <button onclick="switchTab('duelos')" id="tab-btn-duelos" class="nav-tab-btn px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 text-slate-600 hover:bg-slate-100 transition-all">
+                    ⚔️ Duelos de Historia
+                </button>
+                <button onclick="switchTab('profesor')" id="tab-btn-profesor" class="nav-tab-btn px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 text-slate-600 hover:bg-slate-100 transition-all hidden">
+                    👨‍🏫 Panel Docente
+                </button>
+            </div>
+            <div id="student-xp-pill" class="hidden sm:flex items-center gap-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold text-amber-800">
+                ⭐ <span id="current-xp-display">0 XP</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Encabezado exclusivo de Impresión -->
+    <div class="print-only p-6 text-center border-b-2 border-slate-900 mb-6">
+        <h1 class="text-2xl font-extrabold uppercase tracking-wide">Cuadernillo de Recuperación de Geografía e Historia</h1>
+        <h2 class="text-base font-semibold text-slate-700">Materia pendiente de 1.º ESO · Curso 2026-2027</h2>
+        <div class="mt-4 grid grid-cols-3 gap-2 text-left border border-slate-300 p-3 rounded-lg text-xs">
+            <div><strong>Alumno/a:</strong> <span id="print-student-name">...................................................</span></div>
+            <div><strong>Curso:</strong> 2.º ESO Grupo: ......</div>
+            <div><strong>Fecha:</strong> ......./......./202...</div>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-grow w-full space-y-8">
+
+        <!-- =========================================================================
+             1. PESTAÑA: PASAPORTE DE RECUPERACIÓN (ALUMNO)
+             ========================================================================= -->
+        <section id="view-pasaporte" class="view-section space-y-6">
+            <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-indigo-500/20 relative overflow-hidden">
+                <div class="absolute right-0 top-0 translate-x-12 -translate-y-12 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="max-w-3xl relative z-10">
+                    <span class="inline-block bg-indigo-500/30 text-indigo-300 font-extrabold text-[11px] uppercase tracking-wider px-3 py-1 rounded-full border border-indigo-400/30 mb-3">Tu Itinerario de Éxito</span>
+                    <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-white tracking-tight">¡Bienvenido a tu Pasaporte de Geografía e Historia!</h2>
+                    <p class="text-slate-300 text-xs sm:text-sm mt-2 leading-relaxed">
+                        Este programa interactivo te guiará para recuperar la materia pendiente de 1.º de ESO mientras cursas 2.º. Trabaja las actividades desde tu Chromebook o en papel, completa los retos y observa tu progreso en tiempo real sincronizado con tu profesor.
+                    </p>
+                </div>
+
+                <!-- 3 Misiones Anuales -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                    <div class="bg-white/5 border border-white/10 hover:border-sky-500/50 p-5 rounded-2xl backdrop-blur-md transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-0.5 rounded-full">1.º Trimestre</span>
+                                <span class="text-xl">🗺️</span>
+                            </div>
+                            <h3 class="font-bold text-base text-white mt-2">Atlas Geográfico Personal</h3>
+                            <p class="text-xs text-slate-300 mt-1">Coordenadas, mapas, climas y paisajes andaluces.</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-500/30 text-slate-300 border border-slate-500/30">Pendiente</span>
+                            <button onclick="switchTab('bloque3')" class="text-xs bg-sky-500 hover:bg-sky-400 text-slate-900 font-extrabold px-3 py-1.5 rounded-xl transition-all">Explorar</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/10 hover:border-amber-500/50 p-5 rounded-2xl backdrop-blur-md transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full">2.º Trimestre</span>
+                                <span class="text-xl">🏺</span>
+                            </div>
+                            <h3 class="font-bold text-base text-white mt-2">Museo de la Prehistoria</h3>
+                            <p class="text-xs text-slate-300 mt-1">Hominización, Paleolítico, Neolítico y megalitismo.</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-500/30 text-slate-300 border border-slate-500/30">Pendiente</span>
+                            <button onclick="switchTab('bloque1')" class="text-xs bg-amber-500 hover:bg-amber-400 text-slate-900 font-extrabold px-3 py-1.5 rounded-xl transition-all">Explorar</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/10 hover:border-purple-500/50 p-5 rounded-2xl backdrop-blur-md transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-bold text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-full">3.º Trimestre</span>
+                                <span class="text-xl">🏛️</span>
+                            </div>
+                            <h3 class="font-bold text-base text-white mt-2">Dossier Mundo Antiguo</h3>
+                            <p class="text-xs text-slate-300 mt-1">Primeras civilizaciones, Grecia y la Bética romana.</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-500/30 text-slate-300 border border-slate-500/30">Pendiente</span>
+                            <button onclick="switchTab('bloque2')" class="text-xs bg-purple-500 hover:bg-purple-400 text-slate-900 font-extrabold px-3 py-1.5 rounded-xl transition-all">Explorar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Escala de Progreso Oficial LOMLOE -->
+            <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-slate-200">
+                <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 rounded-xl bg-indigo-50 text-indigo-600 font-bold text-sm">🎯 Progreso de recuperación</div>
+                    <div>
+                        <h3 class="font-display font-bold text-base text-slate-900">Escala de Valoración y Progreso</h3>
+                        <p class="text-xs text-slate-500">Escala provisional hasta incorporar y verificar la redacción oficial del currículo</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="bg-emerald-50/70 border border-emerald-200 p-4 rounded-2xl">
+                        <span class="text-xs font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">Nivel 4</span>
+                        <h4 class="font-bold text-slate-900 text-xs mt-2">Alcanzado con autonomía</h4>
+                        <p class="text-[11px] text-slate-600 mt-1">Aplica con soltura y sin errores los conocimientos y destrezas.</p>
+                    </div>
+                    <div class="bg-blue-50/70 border border-blue-200 p-4 rounded-2xl">
+                        <span class="text-xs font-extrabold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-md">Nivel 3</span>
+                        <h4 class="font-bold text-slate-900 text-xs mt-2">Alcanzado</h4>
+                        <p class="text-[11px] text-slate-600 mt-1">Supera el criterio satisfactoriamente siguiendo los modelos guiados.</p>
+                    </div>
+                    <div class="bg-amber-50/70 border border-amber-200 p-4 rounded-2xl">
+                        <span class="text-xs font-extrabold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md">Nivel 2</span>
+                        <h4 class="font-bold text-slate-900 text-xs mt-2">En proceso</h4>
+                        <p class="text-[11px] text-slate-600 mt-1">Comprensión básica; requiere realizar el segundo intento de mejora.</p>
+                    </div>
+                    <div class="bg-rose-50/70 border border-rose-200 p-4 rounded-2xl">
+                        <span class="text-xs font-extrabold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-md">Nivel 1</span>
+                        <h4 class="font-bold text-slate-900 text-xs mt-2">No alcanzado</h4>
+                        <p class="text-[11px] text-slate-600 mt-1">Necesita tutoría y revisión de las explicaciones esenciales.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             2. PESTAÑA: BLOQUE 3 (GEOGRAFÍA FÍSICA)
+             ========================================================================= -->
+        <section id="view-bloque3" class="view-section hidden space-y-8">
+            <div class="bg-gradient-to-r from-sky-600 to-emerald-600 text-white p-6 sm:p-7 rounded-3xl shadow-lg flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <div>
+                    <span class="text-xs font-extrabold bg-white/20 px-3 py-1 rounded-full uppercase tracking-wider">Bloque 3 • Primer Trimestre</span>
+                    <h2 class="font-display text-2xl font-bold mt-1">Geografía Física y Paisajes</h2>
+                    <p class="text-xs text-sky-100 mt-0.5">Aprendizajes: mapas, escalas, clima y paisaje andaluz</p>
+                </div>
+                <div class="bg-white/10 px-4 py-2 rounded-2xl backdrop-blur-md text-xs font-semibold">
+                    🎯 Producto Final: <strong>Atlas Geográfico Personal</strong>
+                </div>
+            </div>
+
+            <!-- UNIDAD 3.1: Coordenadas y Escala -->
+            <article class="unit-card bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <div class="flex justify-between items-center text-xs font-bold text-sky-600 uppercase mb-1">
+                        <span>Unidad 3.1 • Cartografía</span>
+                        <span class="bg-sky-50 text-sky-700 px-2.5 py-0.5 rounded-full">Cartografía y orientación</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900">¿Dónde estamos exactamente? Las coordenadas y la escala</h3>
+                    <div class="mt-3 bg-sky-50/70 border-l-4 border-sky-500 p-3.5 rounded-r-xl">
+                        <p class="text-xs font-semibold text-sky-950">🤔 <strong>Pregunta reto inicial:</strong> Si te desorientas en Sierra Morena, ¿qué dos datos numéricos permitirían al servicio 112 localizarte en el mapa?</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                    <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                        <strong class="text-slate-800 block mb-1">🎯 Qué voy a aprender:</strong>
+                        <p class="text-slate-600">Comprender los paralelos, meridianos y cómo calcular distancias reales con la escala.</p>
+                    </div>
+                    <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                        <strong class="text-slate-800 block mb-1">📋 Qué debo demostrar:</strong>
+                        <p class="text-slate-600">Localizar coordenadas (latitud/longitud) y transformar centímetros en kilómetros.</p>
+                    </div>
+                    <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                        <strong class="text-slate-800 block mb-1">📖 Vocabulario esencial:</strong>
+                        <p class="text-slate-600"><em>Paralelo, Meridiano, Latitud, Longitud, Escala gráfica, Leyenda.</em></p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="font-bold text-sm text-slate-900">📚 Explicación concisa:</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Para ubicarnos en la Tierra usamos los <strong>paralelos</strong> (líneas horizontales que miden la <strong>latitud</strong> norte o sur desde el Ecuador) y los <strong>meridianos</strong> (líneas verticales que miden la <strong>longitud</strong> este u oeste desde Greenwich). 
+                        La <strong>escala</strong> indica la proporción entre la distancia en el mapa y la distancia real.
+                    </p>
+                    <div class="bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-100 p-4 rounded-2xl text-center font-mono font-bold text-xs text-indigo-900">
+                        📍 COORDENADAS = Latitud (Paralelo / Ecuador) + Longitud (Meridiano / Greenwich)
+                    </div>
+                </div>
+
+                <div class="bg-sky-50/50 border border-sky-200 p-5 rounded-2xl space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h5 class="font-bold text-xs text-sky-950">10. Actividad de Aplicación Práctica:</h5>
+                        <span class="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full">Sincronización</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"><div class="bg-white border border-sky-100 rounded-xl p-3"><strong>🎯 Objetivo</strong><p class="mt-1 text-slate-600">Interpretar la escala de un mapa y expresar correctamente una distancia real.</p></div><div class="bg-white border border-sky-100 rounded-xl p-3"><strong>🧰 Material</strong><p class="mt-1 text-slate-600">Mapa o atlas, regla, calculadora y cuaderno.</p></div></div>
+                    <div class="bg-white border border-sky-100 rounded-xl p-4 text-xs"><strong>Desarrollo paso a paso</strong><ol class="list-decimal ml-5 mt-2 space-y-1 text-slate-600"><li>Identifica qué significa la escala 1:50.000.</li><li>Multiplica los centímetros del mapa por la distancia representada.</li><li>Convierte el resultado primero a metros y después a kilómetros.</li><li>Escribe la operación y una frase final.</li></ol></div>
+                    <p class="text-xs text-slate-700"><strong>TAREA 1.</strong> En un mapa físico de Andalucía a escala <code>1:50.000</code>, la distancia en línea recta entre dos municipios es de <strong>6 centímetros</strong>. ¿Cuántos kilómetros reales los separan? Justifica tu cálculo brevemente.</p>
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs"><strong>🏁 RETO:</strong> Explica cómo comprobarías el resultado usando la escala gráfica.</div>
+                    <details class="bg-white border border-slate-200 rounded-xl p-3 text-xs"><summary class="font-bold cursor-pointer">Ayuda graduada: elige el nivel que necesites</summary><div class="grid gap-2 mt-3"><p><strong>Nivel 1:</strong> 1 cm representa 50.000 cm reales.</p><p><strong>Nivel 2:</strong> 6 × 50.000 = … cm; divide entre 100 para obtener metros.</p><p><strong>Nivel 3:</strong> Realiza las conversiones y justifica el procedimiento sin plantilla.</p></div></details>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px]"><strong>Criterio oficial 3.3:</strong> Representar información básica sobre acontecimientos geográficos e históricos utilizando mapas, representaciones gráficas sencillas y visuales, tanto en soporte físico como digital. <span class="font-bold text-sky-700">Saber básico: GEH.1.A.1.</span></div>
+                    
+                    <textarea id="task-geo-1" placeholder="Explica tu cálculo y el resultado en kilómetros..." class="w-full text-xs p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none min-h-[70px]"></textarea>
+                    
+                    <div class="flex justify-between items-center pt-2">
+                        <span id="status-task-geo-1" class="text-[11px] text-slate-500 italic">No guardado aún</span>
+                        <button onclick="saveStudentTask('geo_1', document.getElementById('task-geo-1').value)" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+                            💾 Guardar Tarea
+                        </button>
+                    </div>
+                </div>
+            </article>
+            <div id="map-activities" class="space-y-6"></div>
+        </section>
+
+        <!-- 3. PREHISTORIA -->
+        <section id="view-bloque1" class="view-section hidden space-y-6">
+            <div class="bg-gradient-to-r from-amber-600 to-orange-600 text-white p-6 sm:p-7 rounded-3xl shadow-lg">
+                <span class="text-xs font-extrabold bg-white/20 px-3 py-1 rounded-full uppercase tracking-wider">Segundo trimestre</span>
+                <h2 class="font-display text-2xl font-bold mt-2">La Prehistoria</h2>
+                <p class="text-xs text-amber-50 mt-1">Producto final: Museo de la Prehistoria.</p>
+            </div>
+            <article class="unit-card bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-5">
+                <div>
+                    <span class="text-xs font-bold text-amber-700">Actividad 2.1 · Cambio histórico</span>
+                    <h3 class="text-xl font-bold text-slate-900">Del Paleolítico al Neolítico</h3>
+                    <p class="text-xs text-slate-600 mt-2">Explica tres cambios que produjo la agricultura en la forma de vida humana. Relaciona cada cambio con una consecuencia.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"><div class="bg-amber-50 border border-amber-100 rounded-xl p-3"><strong>🎯 Objetivo</strong><p class="mt-1">Reconocer cambios y permanencias entre Paleolítico y Neolítico.</p></div><div class="bg-amber-50 border border-amber-100 rounded-xl p-3"><strong>🧰 Material</strong><p class="mt-1">Apuntes, eje cronológico y dos fuentes o imágenes.</p></div></div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs"><strong>Desarrollo paso a paso</strong><ol class="list-decimal ml-5 mt-2 space-y-1"><li>Describe cómo se obtenían los alimentos en cada etapa.</li><li>Compara vivienda, desplazamiento y organización social.</li><li>Señala tres cambios y una permanencia.</li><li>Relaciona cada cambio con una causa o consecuencia.</li></ol></div>
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs"><strong>🏁 RETO:</strong> ¿La agricultura mejoró todos los aspectos de la vida? Escribe una conclusión razonada.</div>
+                <details class="bg-white border border-slate-200 rounded-xl p-3 text-xs"><summary class="font-bold cursor-pointer">Ayuda graduada: elige el nivel que necesites</summary><div class="grid gap-2 mt-3"><p><strong>Nivel 1:</strong> Usa: nomadismo, sedentarismo, caza y agricultura.</p><p><strong>Nivel 2:</strong> Organiza la respuesta en “antes / después / consecuencia”.</p><p><strong>Nivel 3:</strong> Compara las fuentes y redacta una conclusión autónoma.</p></div></details>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px]"><strong>Criterio oficial 3.5:</strong> Analizar de manera guiada procesos de cambio histórico de relevancia a través del uso de diferentes fuentes de información, señalando los principales elementos de continuidad y permanencia en diferentes periodos y lugares. <span class="font-bold text-amber-700">Saberes básicos: GEH.1.B.1, GEH.1.B.2 y GEH.1.C.10.</span></div>
+                <textarea id="task-pre-1" placeholder="Escribe aquí tu respuesta razonada..." class="w-full text-xs p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none min-h-[120px]"></textarea>
+                <div class="flex justify-between items-center">
+                    <span id="status-task-pre-1" class="text-[11px] text-slate-500 italic">No guardado aún</span>
+                    <button onclick="saveStudentTask('pre_1', document.getElementById('task-pre-1').value)" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl">💾 Guardar tarea</button>
+                </div>
+                <div class="border-t border-amber-100 pt-3 text-xs"><strong>Valoración final</strong><div class="flex flex-wrap gap-3 mt-2"><label><input type="radio" name="self-pre_1" value="si" onchange="saveSelfAssessment('pre_1',this.value)"> Sí</label><label><input type="radio" name="self-pre_1" value="poco" onchange="saveSelfAssessment('pre_1',this.value)"> Poco</label><label><input type="radio" name="self-pre_1" value="no" onchange="saveSelfAssessment('pre_1',this.value)"> No todavía</label></div></div>
+            </article>
+        </section>
+
+        <!-- 4. MUNDO ANTIGUO -->
+        <section id="view-bloque2" class="view-section hidden space-y-6">
+            <div class="bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-6 sm:p-7 rounded-3xl shadow-lg">
+                <span class="text-xs font-extrabold bg-white/20 px-3 py-1 rounded-full uppercase tracking-wider">Tercer trimestre</span>
+                <h2 class="font-display text-2xl font-bold mt-2">El Mundo Antiguo</h2>
+                <p class="text-xs text-purple-50 mt-1">Producto final: Dossier de civilizaciones antiguas.</p>
+            </div>
+            <article class="unit-card bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-5">
+                <div>
+                    <span class="text-xs font-bold text-purple-700">Actividad 3.1 · Comparación histórica</span>
+                    <h3 class="text-xl font-bold text-slate-900">Grecia y Roma: semejanzas y diferencias</h3>
+                    <p class="text-xs text-slate-600 mt-2">Compara la organización política, la sociedad y una aportación cultural de Grecia y Roma. Termina explicando qué herencia sigue presente hoy.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"><div class="bg-purple-50 border border-purple-100 rounded-xl p-3"><strong>🎯 Objetivo</strong><p class="mt-1">Situar Grecia y Roma y reconocer sus aportaciones históricas y culturales.</p></div><div class="bg-purple-50 border border-purple-100 rounded-xl p-3"><strong>🧰 Material</strong><p class="mt-1">Mapa del Mediterráneo, eje cronológico, libro o apuntes.</p></div></div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs"><strong>Desarrollo paso a paso</strong><ol class="list-decimal ml-5 mt-2 space-y-1"><li>Localiza ambas civilizaciones en el espacio y el tiempo.</li><li>Compara organización política y grupos sociales.</li><li>Selecciona una aportación cultural de cada una.</li><li>Explica una huella presente en Andalucía.</li></ol></div>
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs"><strong>🏁 RETO:</strong> Elige la aportación clásica que consideres más importante hoy y defiéndela con dos razones.</div>
+                <details class="bg-white border border-slate-200 rounded-xl p-3 text-xs"><summary class="font-bold cursor-pointer">Ayuda graduada: elige el nivel que necesites</summary><div class="grid gap-2 mt-3"><p><strong>Nivel 1:</strong> Completa: Grecia destacó por…; Roma destacó por…</p><p><strong>Nivel 2:</strong> Usa una tabla con política, sociedad, cultura y legado.</p><p><strong>Nivel 3:</strong> Redacta una comparación completa con conclusión propia.</p></div></details>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px]"><strong>Criterio oficial 6.1:</strong> Situar el nacimiento y desarrollo de distintas civilizaciones y ubicarlas en el espacio y en el tiempo, integrando los elementos históricos, culturales, institucionales y religiosos que las han conformado, reconociendo la realidad multicultural generada a lo largo del tiempo e identificando sus aportaciones más relevantes a la cultura universal. <span class="font-bold text-purple-700">Saberes básicos: GEH.1.A.1, GEH.1.B.3, GEH.1.B.5, GEH.1.B.8, GEH.1.B.11, GEH.1.B.13 y GEH.1.C.8.</span></div>
+                <textarea id="task-ant-1" placeholder="Redacta una comparación ordenada..." class="w-full text-xs p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:outline-none min-h-[120px]"></textarea>
+                <div class="flex justify-between items-center">
+                    <span id="status-task-ant-1" class="text-[11px] text-slate-500 italic">No guardado aún</span>
+                    <button onclick="saveStudentTask('ant_1', document.getElementById('task-ant-1').value)" class="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs rounded-xl">💾 Guardar tarea</button>
+                </div>
+                <div class="border-t border-purple-100 pt-3 text-xs"><strong>Valoración final</strong><div class="flex flex-wrap gap-3 mt-2"><label><input type="radio" name="self-ant_1" value="si" onchange="saveSelfAssessment('ant_1',this.value)"> Sí</label><label><input type="radio" name="self-ant_1" value="poco" onchange="saveSelfAssessment('ant_1',this.value)"> Poco</label><label><input type="radio" name="self-ant_1" value="no" onchange="saveSelfAssessment('ant_1',this.value)"> No todavía</label></div></div>
+            </article>
+        </section>
+
+        <!-- 5. PANEL DOCENTE -->
+        <section id="view-profesor" class="view-section hidden space-y-6">
+            <div class="bg-gradient-to-r from-indigo-800 to-slate-900 text-white p-6 sm:p-7 rounded-3xl shadow-lg flex flex-col md:flex-row justify-between gap-4">
+                <div>
+                    <span class="text-xs font-extrabold bg-white/15 px-3 py-1 rounded-full uppercase tracking-wider">Gestión con sincronización</span>
+                    <h2 class="font-display text-2xl font-bold mt-2">Panel docente de recuperación</h2>
+                    <p class="text-xs text-indigo-100 mt-1">Alumnado, entregas, valoración y seguimiento sincronizados en la nube.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 interactive-controls">
+                    <button onclick="exportBackup()" class="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-xs font-bold">⬇ Copia de seguridad</button>
+                    <label class="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-xs font-bold cursor-pointer">⬆ Restaurar<input id="backup-file" type="file" accept="application/json" class="hidden" onchange="importBackup(this.files[0])"></label>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-900">Añadir alumno/a</h3>
+                    <p class="text-[11px] text-slate-500 mt-1">Los datos se guardan en la base de datos del centro (Firebase) y se sincronizan entre dispositivos.</p>
+                    <div class="space-y-3 mt-4">
+                        <input id="new-student-name" type="text" placeholder="Nombre y apellidos" class="w-full text-xs p-3 rounded-xl border border-slate-300">
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="new-student-group" class="text-xs p-3 rounded-xl border border-slate-300"><option>2.º ESO A</option><option>2.º ESO B</option><option>2.º ESO C</option></select>
+                            <input id="new-student-code" type="text" placeholder="Código (opcional)" class="text-xs p-3 rounded-xl border border-slate-300">
+                        </div>
+                        <button onclick="addStudent()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold">＋ Añadir alumno/a</button>
+                    </div>
+                    <div id="teacher-student-list" class="mt-5 space-y-2"></div>
+                </div>
+
+                <div class="lg:col-span-2 bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                        <div><h3 id="teacher-active-name" class="font-bold text-slate-900">Selecciona un alumno/a</h3><p id="teacher-active-meta" class="text-[11px] text-slate-500">Sin expediente activo</p></div>
+                        <span id="teacher-progress-pill" class="text-xs font-bold bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full">0 % completado</span>
+                    </div>
+                    <div id="teacher-empty-state" class="py-12 text-center text-sm text-slate-400">Añade o selecciona un alumno para comenzar el seguimiento.</div>
+                    <div id="teacher-evaluation" class="hidden mt-5 space-y-4">
+                        <div id="teacher-kpis" class="grid grid-cols-2 xl:grid-cols-4 gap-3"></div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                            <div class="flex justify-between items-center"><h4 class="text-xs font-bold text-slate-900">📁 Datos del expediente</h4><button onclick="window.print()" class="text-[11px] font-bold text-indigo-600 underline">Imprimir informe</button></div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                                <label class="text-[11px] text-slate-600">Tutor/a<input id="student-tutor" class="mt-1 w-full p-2.5 rounded-lg border border-slate-300 text-xs" placeholder="Nombre del tutor/a"></label>
+                                <label class="text-[11px] text-slate-600">Fecha de próxima revisión<input id="student-review-date" type="date" class="mt-1 w-full p-2.5 rounded-lg border border-slate-300 text-xs"></label>
+                                <label class="text-[11px] text-slate-600">Estado del programa<select id="student-program-status" class="mt-1 w-full p-2.5 rounded-lg border border-slate-300 text-xs"><option value="activo">Activo</option><option value="seguimiento">En seguimiento</option><option value="superado">Superado</option><option value="no-superado">No superado</option></select></label>
+                            </div>
+                            <label class="block text-[11px] text-slate-600 mt-3">Medidas de apoyo y adaptaciones<textarea id="student-support" class="mt-1 w-full p-2.5 rounded-lg border border-slate-300 text-xs min-h-[65px]" placeholder="Apoyos, nivel de ayuda, adaptación de formato o tiempos..."></textarea></label>
+                            <button onclick="saveStudentProfile()" class="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">Guardar expediente</button>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                            <div class="p-4 border-b border-slate-200"><h4 class="text-xs font-bold text-slate-900">📊 Progreso por evaluación</h4></div>
+                            <div id="teacher-term-progress" class="grid grid-cols-1 md:grid-cols-3 gap-3 p-4"></div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                            <div class="p-4 border-b border-slate-200"><h4 class="text-xs font-bold text-slate-900">🎯 Criterios, saberes y evidencias</h4></div>
+                            <div id="teacher-criteria-table" class="overflow-x-auto"></div>
+                        </div>
+                        <h4 class="text-xs font-bold text-slate-900 pt-2">📝 Entregas, intentos y valoración docente</h4>
+                        <div id="teacher-task-cards" class="space-y-3"></div>
+                        <div class="border-t border-slate-200 pt-4">
+                            <label class="text-xs font-bold text-slate-700">Observaciones y acuerdos de seguimiento</label>
+                            <textarea id="teacher-notes" class="w-full mt-2 text-xs p-3 rounded-xl border border-slate-300 min-h-[90px]" placeholder="Dificultades, apoyos, acuerdos y próxima revisión..."></textarea>
+                            <button onclick="saveTeacherNotes()" class="mt-2 px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold">Guardar seguimiento</button>
+                        </div>
+                        <div class="border border-emerald-200 bg-emerald-50/50 rounded-2xl p-4">
+                            <h4 class="text-xs font-bold text-emerald-900">✅ Valoración final de la recuperación</h4>
+                            <p class="text-[11px] text-emerald-800 mt-1">Rúbrica de 3 criterios con el mismo peso (Conocimientos y contenidos · Mapas y cartografía · Constancia y entregas), valores discretos 10 / 7 / 5 / 2 y nota final como media de los tres.</p>
+                            <div id="student-final-rubric" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3"></div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                                <div class="text-[11px] bg-white border border-emerald-200 rounded-lg p-2.5"><span class="block text-slate-500">Calificación (media)</span><span id="student-final-grade-display" class="text-lg font-extrabold text-emerald-800">—</span></div>
+                                <label class="text-[11px]">Decisión<select id="student-final-decision" class="mt-1 w-full p-2.5 rounded-lg border border-emerald-200 text-xs"><option value="pendiente">Pendiente</option><option value="superada">Materia superada</option><option value="no-superada">Materia no superada</option></select></label>
+                                <label class="text-[11px]">Fecha de cierre<input id="student-close-date" type="date" class="mt-1 w-full p-2.5 rounded-lg border border-emerald-200 text-xs"></label>
+                            </div>
+                            <button onclick="saveFinalAssessment()" class="mt-3 px-4 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Guardar valoración final</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             6. PESTAÑA: ARCADE DE DUELOS DE HISTORIA (GAMIFICACIÓN)
+             ========================================================================= -->
+        <section id="view-duelos" class="view-section hidden space-y-6">
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl text-center relative overflow-hidden">
+                <span class="inline-block bg-amber-500/20 text-amber-300 font-extrabold text-[11px] uppercase tracking-wider px-3 py-1 rounded-full border border-amber-400/30 mb-2">Entrenamiento Rápido</span>
+                <h2 class="font-display text-2xl sm:text-3xl font-extrabold">⚔️ Duelos de Historia y Geografía</h2>
+                <p class="text-slate-300 text-xs max-w-lg mx-auto mt-1">Responde las preguntas rápidas para sumar puntos XP a tu Pasaporte de Recuperación.</p>
+            </div>
+
+            <div class="max-w-xl mx-auto bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
+                <div class="flex justify-between items-center text-xs font-bold text-slate-400">
+                    <span id="arcade-count">Pregunta 1 de 5</span>
+                    <span id="arcade-score" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full">Aciertos: 0</span>
+                </div>
+
+                <div class="space-y-2">
+                    <span id="arcade-badge-cat" class="text-[10px] uppercase font-extrabold text-sky-600 bg-sky-50 px-2 py-0.5 rounded-md">Geografía Física</span>
+                    <h3 id="arcade-q-text" class="text-base font-bold text-slate-900">¿Qué línea imaginaria divide la Tierra en Hemisferio Norte y Hemisferio Sur?</h3>
+                </div>
+
+                <div id="arcade-options" class="space-y-2.5">
+                    <!-- Botones inyectados dinámicamente -->
+                </div>
+
+                <div id="arcade-fb" class="hidden text-xs font-bold p-3 rounded-2xl"></div>
+
+                <button id="arcade-next" onclick="nextArcadeQuestion()" class="hidden w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+                    Siguiente Pregunta ➔
+                </button>
+            </div>
+        </section>
+
+        <!-- Modal: Acceso de Profesor -->
+        <div id="modal-teacher-auth" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center hidden no-print p-4">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center space-y-5 border border-slate-100">
+                <div class="w-14 h-14 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-sm">
+                    👨‍🏫
+                </div>
+                <div>
+                    <h3 class="font-display font-bold text-xl text-slate-900">Acceso Docente</h3>
+                    <p class="text-xs text-slate-500 mt-1">Introduce la contraseña del profesorado para entrar en el panel docente. Los datos se guardan en la base de datos del departamento (Firebase).</p>
+                </div>
+
+                <input id="teacher-password-input" type="password" placeholder="Contraseña de profesor/a" class="w-full text-sm p-3 rounded-xl border border-slate-300 text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none" onkeydown="if(event.key==='Enter') submitTeacherPassword()">
+                <p id="teacher-auth-error" class="hidden text-xs font-bold text-rose-600">Contraseña incorrecta. Inténtalo de nuevo.</p>
+
+                <button onclick="submitTeacherPassword()" class="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-500 font-bold text-xs rounded-2xl shadow-md transition-all">
+                    Entrar en el panel docente
+                </button>
+
+                <button onclick="closeTeacherAuthModal()" class="text-xs text-slate-400 hover:text-slate-600 font-semibold block mx-auto">
+                    Volver al modo alumno
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 no-print mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>Cuadernillo Digital de Recuperación LOMLOE · Decreto 102/2023 y Orden de 30 de mayo de 2023 (evaluación ESO Andalucía).</span>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span id="sync-status-pill">● Conectando...</span>
+                <span>•</span>
+                <button onclick="window.print()" class="hover:text-indigo-600 underline font-medium">Modo Imprimir Físico</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- =========================================================================
+         CONFIGURACIÓN DE FIREBASE
+         Rellena aquí las credenciales del proyecto de Firebase (igual que en tus
+         otras apps: EduFísica Pro, Sociograma Centro, Clima Aula...).
+         Si dejas apiKey vacío, la app funciona en MODO LOCAL DE DEMOSTRACIÓN
+         (solo en este navegador, sin sincronizar entre dispositivos).
+         ========================================================================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDVG8yf3PRvi6w9wEWyptA7VFyc3D4TK0E",
+            authDomain: "recuperacion-geh-1eso.firebaseapp.com",
+            databaseURL: "https://recuperacion-geh-1eso-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "recuperacion-geh-1eso",
+            storageBucket: "recuperacion-geh-1eso.firebasestorage.app",
+            messagingSenderId: "203082003831",
+            appId: "1:203082003831:web:2d16c8fbb55feab48f5d72"
+        };
+
+        const FIREBASE_ENABLED = !!firebaseConfig.apiKey;
+        window.FIREBASE_ENABLED = FIREBASE_ENABLED;
+        const ACADEMIC_YEAR = "2026-2027";
+        const ROOT_PATH = `recuperacion-geh-1eso/${ACADEMIC_YEAR}/students`;
+
+        if (FIREBASE_ENABLED) {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getDatabase(app);
+            window.__db = db;
+            window.__dbRef = ref;
+            window.__dbOnValue = onValue;
+            window.__dbPush = push;
+            window.__dbSet = set;
+            window.__dbUpdate = update;
+            window.__dbRemove = remove;
+            window.__studentsRef = ref(db, ROOT_PATH);
+
+            signInAnonymously(auth).catch((err) => {
+                console.error("Error de autenticación anónima:", err);
+                window.setSyncStatus("error", "Sin conexión con Firebase");
+            });
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) window.initFirebaseSync();
+            });
+        } else {
+            window.setSyncStatus("local", "Modo local de demostración (sin sincronizar)");
+        }
+    </script>
+
+    <script>
+        // ---------------------------------------------------------------
+        // CONSTANTES DE LA APP
+        // ---------------------------------------------------------------
+        // Cambia esta contraseña por la que quieras usar con tu departamento.
+        const TEACHER_PASSWORD = 'triana2627';
+        const STORAGE_KEY = 'geohist_recuperacion_1eso_v2';
+        const ACTIVE_STUDENT_KEY = 'geohist_recuperacion_active_v2';
+
+        const MAP_TASKS = [
+            { id:'map_and_phys', title:'Mapa físico de Andalucía', area:'Andalucía', kind:'físico', items:'Sierra Morena, cordilleras Béticas, depresión del Guadalquivir, río Guadalquivir, principales afluentes y costas', criterion:'3.3', knowledge:'GEH.1.A.1 · GEH.1.A.2' },
+            { id:'map_and_pol', title:'Mapa político de Andalucía', area:'Andalucía', kind:'político', items:'las ocho provincias y sus capitales', criterion:'3.3', knowledge:'GEH.1.A.1' },
+            { id:'map_esp_phys', title:'Mapa físico de España', area:'España', kind:'físico', items:'Meseta, principales cordilleras, depresiones, vertientes, ríos y archipiélagos', criterion:'3.3', knowledge:'GEH.1.A.1 · GEH.1.A.2' },
+            { id:'map_esp_pol', title:'Mapa político de España', area:'España', kind:'político', items:'comunidades y ciudades autónomas, provincias y capitales autonómicas', criterion:'3.3', knowledge:'GEH.1.A.1' },
+            { id:'map_eur_phys', title:'Mapa físico de Europa', area:'Europa', kind:'físico', items:'principales cordilleras, llanuras, penínsulas, islas, mares y ríos', criterion:'3.3', knowledge:'GEH.1.A.1 · GEH.1.A.2' },
+            { id:'map_eur_pol', title:'Mapa político de Europa', area:'Europa', kind:'político', items:'países europeos y sus capitales', criterion:'3.3', knowledge:'GEH.1.A.1' },
+            { id:'map_world_phys', title:'Mapa físico del mundo', area:'el mundo', kind:'físico', items:'continentes, océanos y grandes unidades de relieve e hidrografía', criterion:'3.3', knowledge:'GEH.1.A.1 · GEH.1.A.2' },
+            { id:'map_world_pol', title:'Mapa político del mundo', area:'el mundo', kind:'político', items:'una selección representativa de países de cada continente y sus capitales', criterion:'3.3', knowledge:'GEH.1.A.1' }
+        ];
+        const TASKS = [
+            { id: 'geo_1', input: 'task-geo-1', status: 'status-task-geo-1', title: 'Geografía · Coordenadas y escala', term: 1, criterion: '3.3', knowledge: 'GEH.1.A.1' },
+            ...MAP_TASKS.map(t => ({...t, input:`task-${t.id}`, status:`status-task-${t.id}`, term:1})),
+            { id: 'pre_1', input: 'task-pre-1', status: 'status-task-pre-1', title: 'Prehistoria · Paleolítico y Neolítico', term: 2, criterion: '3.5', knowledge: 'GEH.1.B.1 · GEH.1.B.2 · GEH.1.C.10' },
+            { id: 'ant_1', input: 'task-ant-1', status: 'status-task-ant-1', title: 'Mundo Antiguo · Grecia y Roma', term: 3, criterion: '6.1', knowledge: 'GEH.1.A.1 · GEH.1.B.3 · GEH.1.B.5 · GEH.1.B.8 · GEH.1.B.11 · GEH.1.B.13 · GEH.1.C.8' }
+        ];
+        const RUBRIC_CRITERIA = [
+            { id: 'conocimientos', label: 'Conocimientos y contenidos' },
+            { id: 'cartografia', label: 'Mapas y cartografía' },
+            { id: 'constancia', label: 'Constancia y entregas' }
+        ];
+        const RUBRIC_VALUES = [10, 7, 5, 2];
+
+        const defaultState = () => ({ version: 2, students: {}, guest: { tasks: {}, xp: 0 } });
+        let state = defaultState();
+        let activeStudentId = localStorage.getItem(ACTIVE_STUDENT_KEY) || 'guest';
+        let teacherAuthed = sessionStorage.getItem('teacherAuthed') === 'true';
+        let currentRole = 'student';
+        let arcadeIndex = 0;
+        let arcadeHits = 0;
+        let arcadeAnswered = false;
+
+        function escapeHTML(value = '') {
+            return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+        }
+
+        window.setSyncStatus = function(kind, text) {
+            const pill = document.getElementById('sync-status-pill');
+            if (!pill) return;
+            const dot = kind === 'ok' ? '🟢' : kind === 'local' ? '⚪' : kind === 'error' ? '🔴' : '🟡';
+            pill.textContent = `${dot} ${text}`;
+        };
+
+        // ---------------------------------------------------------------
+        // CAPA DE DATOS: Firebase Realtime Database si está configurado,
+        // si no, modo local de demostración con localStorage (mismo
+        // comportamiento que el resto de tus apps del centro).
+        // ---------------------------------------------------------------
+        function loadLocalState() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                if (saved && typeof saved.students === 'object') state = saved;
+            } catch (_) { /* keep defaults */ }
+            if (!state.guest) state.guest = { tasks: {}, xp: 0 };
+            if (!state.students) state.students = {};
+        }
+
+        function persistLocalState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        window.initFirebaseSync = function() {
+            window.setSyncStatus('ok', 'Sincronizado con Firebase');
+            window.__dbOnValue(window.__studentsRef, (snapshot) => {
+                state.students = snapshot.val() || {};
+                if (!state.guest) state.guest = { tasks: {}, xp: 0 };
+                renderStudentSelector();
+                hydrateActiveStudent();
+                if (currentRole === 'teacher' && teacherAuthed) renderTeacherPanel();
+            }, (err) => {
+                console.error('Error leyendo Firebase:', err);
+                window.setSyncStatus('error', 'Error de sincronización');
+            });
+        };
+
+        // studentId === 'guest' se mantiene siempre local (modo invitado/demo)
+        function studentRecordRef(id) {
+            return window.__dbRef(window.__db, `${ROOT_PATH}/${id}`);
+        }
+
+        function writeStudent(id, data) {
+            if (id === 'guest') { state.guest = { ...state.guest, ...data }; persistLocalState(); return; }
+            if (window.FIREBASE_ENABLED) {
+                window.__dbUpdate(studentRecordRef(id), data);
+            } else {
+                state.students[id] = { ...(state.students[id] || {}), ...data };
+                persistLocalState();
+            }
+        }
+
+        function getActiveRecord() {
+            if (activeStudentId === 'guest') return state.guest;
+            return state.students[activeStudentId] || state.guest;
+        }
+
+        function setActiveStudent(id) {
+            activeStudentId = id;
+            localStorage.setItem(ACTIVE_STUDENT_KEY, id);
+        }
+
+        // ---------------------------------------------------------------
+        // NAVEGACIÓN Y ROLES
+        // ---------------------------------------------------------------
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-800';
+            toast.className = `${bg} text-white p-3 rounded-2xl shadow-xl text-xs font-bold pointer-events-auto transition-all`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 250); }, 2800);
+        }
+
+        function switchTab(tabId) {
+            if (tabId === 'profesor' && !teacherAuthed) { openTeacherAuthModal(); return; }
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+            });
+            const view = document.getElementById(`view-${tabId}`);
+            const btn = document.getElementById(`tab-btn-${tabId}`);
+            if (view) view.classList.remove('hidden');
+            if (btn) {
+                btn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                btn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+            }
+            if (tabId === 'profesor') renderTeacherPanel();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openTeacherAuthModal() {
+            document.getElementById('modal-teacher-auth').classList.remove('hidden');
+            document.getElementById('teacher-auth-error').classList.add('hidden');
+            const input = document.getElementById('teacher-password-input');
+            input.value = '';
+            setTimeout(() => input.focus(), 50);
+        }
+        function closeTeacherAuthModal() { document.getElementById('modal-teacher-auth').classList.add('hidden'); }
+
+        function submitTeacherPassword() {
+            const value = document.getElementById('teacher-password-input').value;
+            if (value === TEACHER_PASSWORD) {
+                teacherAuthed = true;
+                sessionStorage.setItem('teacherAuthed', 'true');
+                activateTeacherSession();
+                closeTeacherAuthModal();
+            } else {
+                document.getElementById('teacher-auth-error').classList.remove('hidden');
+            }
+        }
+
+        function activateTeacherSession() {
+            currentRole = 'teacher';
+            document.getElementById('teacher-auth-dot').className = 'w-2 h-2 rounded-full bg-emerald-400';
+            document.getElementById('teacher-session-info').classList.remove('hidden');
+            document.getElementById('tab-btn-profesor').classList.remove('hidden');
+            document.getElementById('role-teacher-btn').className = 'px-3 py-1 rounded-lg font-bold bg-indigo-600 text-white shadow-sm flex items-center gap-1.5';
+            document.getElementById('role-student-btn').className = 'px-3 py-1 rounded-lg font-bold text-slate-400 hover:text-white';
+            switchTab('profesor');
+        }
+
+        function logoutTeacher() {
+            teacherAuthed = false;
+            sessionStorage.removeItem('teacherAuthed');
+            document.getElementById('teacher-session-info').classList.add('hidden');
+            document.getElementById('teacher-auth-dot').className = 'w-2 h-2 rounded-full bg-slate-500';
+            setAppRole('student');
+            showToast('Panel docente cerrado.');
+        }
+
+        function setAppRole(role) {
+            if (role === 'teacher') {
+                teacherAuthed ? switchTab('profesor') : openTeacherAuthModal();
+                return;
+            }
+            currentRole = 'student';
+            document.getElementById('role-student-btn').className = 'px-3 py-1 rounded-lg font-bold bg-indigo-600 text-white shadow-sm';
+            document.getElementById('role-teacher-btn').className = 'px-3 py-1 rounded-lg font-bold text-slate-400 hover:text-white flex items-center gap-1.5';
+            if (!teacherAuthed) document.getElementById('tab-btn-profesor').classList.add('hidden');
+            switchTab('pasaporte');
+        }
+
+        // ---------------------------------------------------------------
+        // ALUMNADO: selector, tareas, autoevaluación
+        // ---------------------------------------------------------------
+        function renderStudentSelector() {
+            const select = document.getElementById('active-student-select');
+            const entries = Object.entries(state.students || {});
+            select.innerHTML = '<option value="guest" class="bg-slate-900 text-white">Modo Invitado / Demo</option>' +
+                entries.map(([id, s]) => `<option value="${id}" class="bg-slate-900 text-white">${escapeHTML(s.code || '')} · ${escapeHTML(s.name || '')}</option>`).join('');
+            if (activeStudentId !== 'guest' && !state.students[activeStudentId]) setActiveStudent('guest');
+            select.value = activeStudentId;
+        }
+
+        function changeActiveStudent(id) {
+            setActiveStudent(id);
+            hydrateActiveStudent();
+            if (teacherAuthed) renderTeacherPanel();
+        }
+
+        function hydrateActiveStudent() {
+            const record = getActiveRecord() || { tasks: {}, xp: 0 };
+            const tasks = record.tasks || {};
+            TASKS.forEach(task => {
+                const input = document.getElementById(task.input);
+                const status = document.getElementById(task.status);
+                const savedTask = tasks[task.id];
+                if (input) input.value = savedTask?.answer || '';
+                if (status) status.textContent = savedTask?.updatedAt ? `Guardado · intento ${savedTask.attempts?.length || 1}: ${new Date(savedTask.updatedAt).toLocaleString('es-ES')}` : 'No guardado aún';
+                document.querySelectorAll(`input[name="self-${task.id}"]`).forEach(radio => radio.checked = radio.value === savedTask?.selfAssessment);
+            });
+            document.getElementById('current-xp-display').textContent = `${record.xp || 0} XP`;
+            document.getElementById('student-xp-pill').classList.remove('hidden');
+            const student = state.students[activeStudentId];
+            document.getElementById('print-student-name').textContent = student ? student.name : '...................................................';
+        }
+
+        function saveStudentTask(taskId, answer) {
+            const clean = String(answer || '').trim();
+            if (!clean) { showToast('Escribe una respuesta antes de guardarla.', 'error'); return; }
+            const record = getActiveRecord() || { tasks: {} };
+            const tasks = { ...(record.tasks || {}) };
+            const previous = tasks[taskId] || {};
+            const attempts = Array.isArray(previous.attempts) ? [...previous.attempts] : [];
+            if (!attempts.length || attempts[attempts.length - 1].answer !== clean) attempts.push({ answer: clean, savedAt: new Date().toISOString() });
+            tasks[taskId] = { ...previous, answer: clean, attempts, updatedAt: new Date().toISOString(), status: previous.status === 'superada' ? 'superada' : 'entregada', level: previous.level || 0 };
+            writeStudent(activeStudentId, { tasks });
+            if (!window.FIREBASE_ENABLED || activeStudentId === 'guest') hydrateActiveStudent();
+            showToast(`Tarea guardada · intento ${attempts.length}.`, 'success');
+        }
+
+        function saveSelfAssessment(taskId, value) {
+            const record = getActiveRecord() || { tasks: {} };
+            const tasks = { ...(record.tasks || {}) };
+            tasks[taskId] = { ...(tasks[taskId] || { answer: '', attempts: [], status: 'pendiente', level: 0 }), selfAssessment: value };
+            writeStudent(activeStudentId, { tasks });
+            if (!window.FIREBASE_ENABLED || activeStudentId === 'guest') { hydrateActiveStudent(); if (teacherAuthed) renderTeacherPanel(); }
+        }
+
+        function addStudent() {
+            const nameEl = document.getElementById('new-student-name');
+            const name = nameEl.value.trim();
+            if (!name) { showToast('Indica el nombre del alumno o alumna.', 'error'); return; }
+            const requestedCode = document.getElementById('new-student-code').value.trim().toUpperCase();
+            const existingCodes = new Set(Object.values(state.students || {}).map(s => (s.code || '').toUpperCase()));
+            let code = requestedCode;
+            if (!code) {
+                let n = Object.keys(state.students || {}).length + 1;
+                do { code = `A${String(n).padStart(3, '0')}`; n++; } while (existingCodes.has(code));
+            }
+            if (existingCodes.has(code)) { showToast('Ese código ya está utilizado.', 'error'); return; }
+            const student = { code, name, group: document.getElementById('new-student-group').value, tasks: {}, notes: '', xp: 0, createdAt: new Date().toISOString() };
+            if (window.FIREBASE_ENABLED) {
+                const newRef = window.__dbPush(window.__studentsRef);
+                window.__dbSet(newRef, student);
+                setActiveStudent(newRef.key);
+            } else {
+                const id = `s_${Date.now()}`;
+                state.students[id] = student;
+                persistLocalState();
+                setActiveStudent(id);
+                renderStudentSelector();
+            }
+            nameEl.value = '';
+            document.getElementById('new-student-code').value = '';
+            hydrateActiveStudent();
+            renderTeacherPanel();
+            showToast('Alumno/a añadido correctamente.', 'success');
+        }
+
+        function selectTeacherStudent(id) {
+            setActiveStudent(id);
+            renderStudentSelector();
+            hydrateActiveStudent();
+            renderTeacherPanel();
+        }
+
+        function removeStudent(id) {
+            const student = state.students[id];
+            if (!student || !confirm(`¿Eliminar el expediente de ${student.name}? Esta acción no se puede deshacer.`)) return;
+            if (window.FIREBASE_ENABLED) {
+                window.__dbRemove(studentRecordRef(id));
+            } else {
+                delete state.students[id];
+                persistLocalState();
+                renderStudentSelector();
+            }
+            if (activeStudentId === id) setActiveStudent('guest');
+            hydrateActiveStudent();
+            renderTeacherPanel();
+        }
+
+        function setTaskEvaluation(taskId, field, value) {
+            const student = state.students[activeStudentId];
+            if (!student) return;
+            const tasks = { ...(student.tasks || {}) };
+            tasks[taskId] = { ...(tasks[taskId] || { answer: '', updatedAt: null }), [field]: field === 'level' ? Number(value) : value, evaluatedAt: new Date().toISOString() };
+            writeStudent(activeStudentId, { tasks });
+            if (!window.FIREBASE_ENABLED) renderTeacherPanel();
+        }
+
+        function saveTeacherNotes() {
+            const student = state.students[activeStudentId];
+            if (!student) return;
+            writeStudent(activeStudentId, { notes: document.getElementById('teacher-notes').value.trim() });
+            showToast('Seguimiento guardado.', 'success');
+        }
+
+        function saveStudentProfile() {
+            const student = state.students[activeStudentId];
+            if (!student) return;
+            const profile = {
+                tutor: document.getElementById('student-tutor').value.trim(),
+                reviewDate: document.getElementById('student-review-date').value,
+                programStatus: document.getElementById('student-program-status').value,
+                support: document.getElementById('student-support').value.trim()
+            };
+            writeStudent(activeStudentId, { profile });
+            if (!window.FIREBASE_ENABLED) renderTeacherPanel();
+            showToast('Expediente actualizado.', 'success');
+        }
+
+        // ---------------------------------------------------------------
+        // RÚBRICA FINAL: 3 criterios, mismo peso, valores discretos 10/7/5/2,
+        // nota = media de los tres criterios valorados.
+        // ---------------------------------------------------------------
+        function renderFinalRubric(student) {
+            const criteria = (student.finalAssessment && student.finalAssessment.criteria) || {};
+            document.getElementById('student-final-rubric').innerHTML = RUBRIC_CRITERIA.map(c => `
+                <label class="text-[11px] bg-white border border-emerald-200 rounded-lg p-2.5 block">
+                    ${c.label}
+                    <select onchange="setFinalRubricValue('${c.id}', this.value)" class="mt-1 w-full p-2 rounded-lg border border-emerald-200 text-xs">
+                        <option value="">Sin valorar</option>
+                        ${RUBRIC_VALUES.map(v => `<option value="${v}" ${String(criteria[c.id]) === String(v) ? 'selected' : ''}>${v}</option>`).join('')}
+                    </select>
+                </label>`).join('');
+            updateFinalGradeDisplay(criteria);
+        }
+
+        function updateFinalGradeDisplay(criteria) {
+            const values = RUBRIC_CRITERIA.map(c => criteria[c.id]).filter(v => v !== undefined && v !== null && v !== '').map(Number);
+            const display = document.getElementById('student-final-grade-display');
+            if (values.length === RUBRIC_CRITERIA.length) {
+                const avg = values.reduce((a, b) => a + b, 0) / values.length;
+                display.textContent = avg.toFixed(1);
+            } else {
+                display.textContent = '—';
+            }
+        }
+
+        function setFinalRubricValue(criterionId, value) {
+            const student = state.students[activeStudentId];
+            if (!student) return;
+            const criteria = { ...((student.finalAssessment && student.finalAssessment.criteria) || {}) };
+            if (value === '') delete criteria[criterionId]; else criteria[criterionId] = Number(value);
+            const finalAssessment = { ...(student.finalAssessment || {}), criteria };
+            writeStudent(activeStudentId, { finalAssessment });
+            if (!window.FIREBASE_ENABLED) { renderTeacherPanel(); } else { updateFinalGradeDisplay(criteria); }
+        }
+
+        function saveFinalAssessment() {
+            const student = state.students[activeStudentId];
+            if (!student) return;
+            const criteria = (student.finalAssessment && student.finalAssessment.criteria) || {};
+            const values = RUBRIC_CRITERIA.map(c => criteria[c.id]).filter(v => v !== undefined && v !== null && v !== '').map(Number);
+            const grade = values.length === RUBRIC_CRITERIA.length ? Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)) : null;
+            const finalAssessment = {
+                criteria,
+                grade,
+                decision: document.getElementById('student-final-decision').value,
+                closeDate: document.getElementById('student-close-date').value,
+                updatedAt: new Date().toISOString()
+            };
+            writeStudent(activeStudentId, { finalAssessment });
+            if (!window.FIREBASE_ENABLED) renderTeacherPanel();
+            showToast('Valoración final guardada.', 'success');
+        }
+
+        // ---------------------------------------------------------------
+        // PANEL DOCENTE
+        // ---------------------------------------------------------------
+        function renderTeacherPanel() {
+            if (!teacherAuthed) return;
+            const list = document.getElementById('teacher-student-list');
+            const entries = Object.entries(state.students || {});
+            list.innerHTML = entries.length ? entries.map(([id, s]) => {
+                const done = TASKS.filter(t => s.tasks?.[t.id]?.answer).length;
+                const active = id === activeStudentId ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-slate-50';
+                return `<div class="border ${active} rounded-xl p-3 flex justify-between items-center gap-2"><button onclick="selectTeacherStudent('${id}')" class="text-left min-w-0 flex-1"><strong class="text-xs text-slate-900 block truncate">${escapeHTML(s.name)}</strong><span class="text-[10px] text-slate-500">${escapeHTML(s.code)} · ${escapeHTML(s.group)} · ${done}/${TASKS.length}</span></button><button onclick="removeStudent('${id}')" class="text-rose-500 text-xs font-bold" title="Eliminar">✕</button></div>`;
+            }).join('') : '<p class="text-xs text-slate-400 text-center py-5">Todavía no hay alumnado.</p>';
+
+            const student = state.students[activeStudentId];
+            const empty = document.getElementById('teacher-empty-state');
+            const evaluation = document.getElementById('teacher-evaluation');
+            if (!student) {
+                empty.classList.remove('hidden'); evaluation.classList.add('hidden');
+                document.getElementById('teacher-active-name').textContent = 'Selecciona un alumno/a';
+                document.getElementById('teacher-active-meta').textContent = 'Sin expediente activo';
+                document.getElementById('teacher-progress-pill').textContent = '0 % completado';
+                return;
+            }
+            empty.classList.add('hidden'); evaluation.classList.remove('hidden');
+            document.getElementById('teacher-active-name').textContent = student.name;
+            document.getElementById('teacher-active-meta').textContent = `${student.code} · ${student.group}`;
+            const done = TASKS.filter(t => student.tasks?.[t.id]?.answer).length;
+            const passed = TASKS.filter(t => student.tasks?.[t.id]?.status === 'superada').length;
+            const attempts = TASKS.reduce((sum, t) => sum + (student.tasks?.[t.id]?.attempts?.length || 0), 0);
+            const valuedLevels = TASKS.map(t => student.tasks?.[t.id]?.level || 0).filter(Boolean);
+            const meanLevel = valuedLevels.length ? (valuedLevels.reduce((a,b) => a + b, 0) / valuedLevels.length).toFixed(1) : '—';
+            document.getElementById('teacher-progress-pill').textContent = `${Math.round(done / TASKS.length * 100)} % completado`;
+            document.getElementById('teacher-kpis').innerHTML = [
+                ['Entregadas', `${done}/${TASKS.length}`, 'bg-sky-50 text-sky-800'],
+                ['Superadas', `${passed}/${TASKS.length}`, 'bg-emerald-50 text-emerald-800'],
+                ['Intentos', attempts, 'bg-amber-50 text-amber-800'],
+                ['Nivel medio', meanLevel, 'bg-purple-50 text-purple-800']
+            ].map(k => `<div class="${k[2]} rounded-2xl p-3"><p class="text-[10px] font-bold uppercase">${k[0]}</p><p class="text-xl font-extrabold mt-1">${k[1]}</p></div>`).join('');
+            document.getElementById('teacher-term-progress').innerHTML = [1,2,3].map(term => {
+                const termTasks = TASKS.filter(t => t.term === term);
+                const termDone = termTasks.filter(t => student.tasks?.[t.id]?.answer).length;
+                const termPassed = termTasks.filter(t => student.tasks?.[t.id]?.status === 'superada').length;
+                const pct = Math.round(termDone / termTasks.length * 100);
+                return `<div class="bg-slate-50 rounded-xl p-3"><div class="flex justify-between text-[11px] font-bold"><span>${term}.ª evaluación</span><span>${pct}%</span></div><div class="h-2 bg-slate-200 rounded-full mt-2 overflow-hidden"><div class="h-full bg-indigo-500" style="width:${pct}%"></div></div><p class="text-[10px] text-slate-500 mt-2">${termDone} entregada · ${termPassed} superada</p></div>`;
+            }).join('');
+            document.getElementById('teacher-criteria-table').innerHTML = `<table class="w-full text-[11px]"><thead class="bg-slate-50"><tr><th class="text-left p-3">Criterio</th><th class="text-left p-3">Saberes</th><th class="text-left p-3">Evidencia</th><th class="text-left p-3">Nivel</th></tr></thead><tbody>${TASKS.map(t => { const item = student.tasks?.[t.id] || {}; return `<tr class="border-t border-slate-100"><td class="p-3 font-bold">${t.criterion}</td><td class="p-3 text-slate-500">${t.knowledge}</td><td class="p-3">${escapeHTML(t.title)}</td><td class="p-3 font-bold">${item.level || '—'}</td></tr>`; }).join('')}</tbody></table>`;
+            const profile = student.profile || {};
+            document.getElementById('student-tutor').value = profile.tutor || '';
+            document.getElementById('student-review-date').value = profile.reviewDate || '';
+            document.getElementById('student-program-status').value = profile.programStatus || 'activo';
+            document.getElementById('student-support').value = profile.support || '';
+            renderFinalRubric(student);
+            const final = student.finalAssessment || {};
+            document.getElementById('student-final-decision').value = final.decision || 'pendiente';
+            document.getElementById('student-close-date').value = final.closeDate || '';
+            document.getElementById('teacher-task-cards').innerHTML = TASKS.map(t => {
+                const item = student.tasks?.[t.id] || {};
+                const answer = item.answer ? escapeHTML(item.answer) : '<em>Sin entregar</em>';
+                const self = item.selfAssessment === 'si' ? 'Sí' : item.selfAssessment === 'poco' ? 'Poco' : item.selfAssessment === 'no' ? 'No todavía' : 'Sin valorar';
+                return `<div class="border border-slate-200 rounded-2xl p-4"><div class="flex flex-col sm:flex-row justify-between gap-3"><div class="min-w-0 flex-1"><strong class="text-xs text-slate-900">${t.title}</strong><p class="text-[10px] text-indigo-600 mt-1">Intentos: ${item.attempts?.length || 0} · Autoevaluación: ${self}</p><p class="text-[11px] text-slate-600 mt-2 whitespace-pre-wrap max-h-28 overflow-y-auto">${answer}</p></div><div class="grid grid-cols-2 sm:grid-cols-1 gap-2 sm:w-44"><select onchange="setTaskEvaluation('${t.id}','status',this.value)" class="text-xs p-2 rounded-lg border border-slate-300"><option value="pendiente" ${item.status === 'pendiente' ? 'selected' : ''}>Pendiente</option><option value="entregada" ${item.status === 'entregada' ? 'selected' : ''}>Entregada</option><option value="revisar" ${item.status === 'revisar' ? 'selected' : ''}>Debe mejorar</option><option value="superada" ${item.status === 'superada' ? 'selected' : ''}>Superada</option></select><select onchange="setTaskEvaluation('${t.id}','level',this.value)" class="text-xs p-2 rounded-lg border border-slate-300"><option value="0" ${!item.level ? 'selected' : ''}>Sin valorar</option><option value="1" ${item.level === 1 ? 'selected' : ''}>Nivel 1</option><option value="2" ${item.level === 2 ? 'selected' : ''}>Nivel 2</option><option value="3" ${item.level === 3 ? 'selected' : ''}>Nivel 3</option><option value="4" ${item.level === 4 ? 'selected' : ''}>Nivel 4</option></select></div></div></div>`;
+            }).join('');
+            document.getElementById('teacher-notes').value = student.notes || '';
+        }
+
+        // ---------------------------------------------------------------
+        // ACTIVIDADES DE MAPAS (generadas dinámicamente)
+        // ---------------------------------------------------------------
+        function renderMapActivities() {
+            const criterionText = 'Representar información básica sobre acontecimientos geográficos e históricos utilizando mapas, representaciones gráficas sencillas y visuales, tanto en soporte físico como digital.';
+            document.getElementById('map-activities').innerHTML = MAP_TASKS.map((t, index) => `
+                <article class="unit-card bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2"><div><span class="text-xs font-bold text-sky-700">Actividad 1.${index + 2} · Cartografía ${t.kind}</span><h3 class="text-xl font-bold text-slate-900 mt-1">${t.title}</h3></div><span class="text-[10px] font-extrabold bg-amber-100 text-amber-800 px-3 py-1 rounded-full self-start">OBLIGATORIA</span></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"><div class="bg-sky-50 border border-sky-100 rounded-xl p-3"><strong>🎯 Objetivo</strong><p class="mt-1 text-slate-600">Localizar, nombrar y representar correctamente los elementos esenciales del mapa ${t.kind} de ${t.area}.</p></div><div class="bg-sky-50 border border-sky-100 rounded-xl p-3"><strong>📎 Evidencia evaluable</strong><p class="mt-1 text-slate-600">Mapa mudo completado con título, orientación y leyenda, más el registro escrito inferior.</p></div></div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs"><strong>Desarrollo paso a paso</strong><ol class="list-decimal ml-5 mt-2 space-y-1 text-slate-600"><li>Observa el atlas o mapa de referencia.</li><li>Localiza y rotula ${t.items}.</li><li>Usa colores y símbolos coherentes y crea una leyenda.</li><li>Comprueba la posición y escritura de cada topónimo.</li><li>Entrega el mapa y anota los elementos localizados.</li></ol></div>
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs"><strong>🏁 Reto:</strong> Completa un segundo mapa mudo sin consultar el modelo y corrige los errores con otro color.</div>
+                    <details class="bg-white border border-slate-200 rounded-xl p-3 text-xs"><summary class="font-bold cursor-pointer">Ayuda graduada</summary><div class="grid gap-2 mt-3"><p><strong>Nivel 1:</strong> mapa con nombres y lista cerrada.</p><p><strong>Nivel 2:</strong> mapa de referencia sin lista.</p><p><strong>Nivel 3:</strong> mapa mudo sin modelo y justificación de dos localizaciones.</p></div></details>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px]"><strong>Competencia específica 3 · Criterio oficial ${t.criterion}:</strong> ${criterionText} <span class="font-bold text-sky-700">Saberes básicos: ${t.knowledge}.</span><p class="mt-2"><strong>Indicadores observables:</strong> sitúa los elementos en la zona adecuada; escribe topónimos legibles; diferencia categorías mediante símbolos o colores; incorpora título, orientación y leyenda.</p></div>
+                    <textarea id="task-${t.id}" placeholder="Escribe los elementos localizados y qué debes corregir..." class="w-full text-xs p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none min-h-[90px]"></textarea>
+                    <div class="flex flex-wrap justify-between items-center gap-3"><span id="status-task-${t.id}" class="text-[11px] text-slate-500 italic">No guardado aún</span><button onclick="saveStudentTask('${t.id}', document.getElementById('task-${t.id}').value)" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl">💾 Guardar evidencia</button></div>
+                    <div class="border-t border-sky-100 pt-3 text-xs"><strong>Autoevaluación</strong><div class="flex flex-wrap gap-3 mt-2"><label><input type="radio" name="self-${t.id}" value="si" onchange="saveSelfAssessment('${t.id}',this.value)"> Sí</label><label><input type="radio" name="self-${t.id}" value="poco" onchange="saveSelfAssessment('${t.id}',this.value)"> Poco</label><label><input type="radio" name="self-${t.id}" value="no" onchange="saveSelfAssessment('${t.id}',this.value)"> No todavía</label></div></div>
+                </article>`).join('');
+        }
+
+        // ---------------------------------------------------------------
+        // ARCADE · DUELOS DE HISTORIA
+        // ---------------------------------------------------------------
+        const arcadeQuestions = [
+            { cat: 'Geografía física', q: '¿Qué línea imaginaria divide la Tierra en hemisferio norte y sur?', options: ['Ecuador', 'Greenwich', 'Trópico de Cáncer'], answer: 0 },
+            { cat: 'Cartografía', q: 'En una escala 1:50.000, ¿cuántos metros representa 1 cm?', options: ['50 m', '500 m', '5.000 m'], answer: 1 },
+            { cat: 'Prehistoria', q: '¿Qué cambio se relaciona directamente con el Neolítico?', options: ['Agricultura', 'Escritura', 'Moneda'], answer: 0 },
+            { cat: 'Grecia', q: '¿En qué polis se desarrolló la democracia antigua?', options: ['Esparta', 'Atenas', 'Roma'], answer: 1 },
+            { cat: 'Roma', q: '¿Cómo se llamó la provincia romana que incluía buena parte de Andalucía?', options: ['Bética', 'Galia', 'Britania'], answer: 0 }
+        ];
+
+        function renderArcade() {
+            const item = arcadeQuestions[arcadeIndex];
+            document.getElementById('arcade-count').textContent = `Pregunta ${arcadeIndex + 1} de ${arcadeQuestions.length}`;
+            document.getElementById('arcade-score').textContent = `Aciertos: ${arcadeHits}`;
+            document.getElementById('arcade-badge-cat').textContent = item.cat;
+            document.getElementById('arcade-q-text').textContent = item.q;
+            document.getElementById('arcade-options').innerHTML = item.options.map((o, i) => `<button onclick="answerArcade(${i},this)" class="w-full text-left p-3 border border-slate-200 hover:border-indigo-400 rounded-xl text-xs font-semibold">${escapeHTML(o)}</button>`).join('');
+            document.getElementById('arcade-fb').classList.add('hidden');
+            document.getElementById('arcade-next').classList.add('hidden');
+            arcadeAnswered = false;
+        }
+
+        function answerArcade(index, button) {
+            if (arcadeAnswered) return;
+            arcadeAnswered = true;
+            const correct = index === arcadeQuestions[arcadeIndex].answer;
+            if (correct) arcadeHits++;
+            document.querySelectorAll('#arcade-options button').forEach((b, i) => {
+                b.disabled = true;
+                if (i === arcadeQuestions[arcadeIndex].answer) b.classList.add('bg-emerald-50', 'border-emerald-500');
+                else if (b === button) b.classList.add('bg-rose-50', 'border-rose-400');
+            });
+            const fb = document.getElementById('arcade-fb');
+            fb.textContent = correct ? '¡Correcto! Sumas 10 XP.' : 'Respuesta incorrecta. Revisa la opción marcada en verde.';
+            fb.className = `text-xs font-bold p-3 rounded-2xl ${correct ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`;
+            if (correct) {
+                const record = getActiveRecord() || { xp: 0 };
+                writeStudent(activeStudentId, { xp: (record.xp || 0) + 10 });
+                if (!window.FIREBASE_ENABLED || activeStudentId === 'guest') hydrateActiveStudent();
+            }
+            document.getElementById('arcade-score').textContent = `Aciertos: ${arcadeHits}`;
+            document.getElementById('arcade-next').textContent = arcadeIndex === arcadeQuestions.length - 1 ? 'Finalizar duelo' : 'Siguiente pregunta ➔';
+            document.getElementById('arcade-next').classList.remove('hidden');
+        }
+
+        function nextArcadeQuestion() {
+            if (arcadeIndex === arcadeQuestions.length - 1) {
+                showToast(`Duelo terminado: ${arcadeHits}/${arcadeQuestions.length} aciertos.`, 'success');
+                arcadeIndex = 0; arcadeHits = 0;
+            } else arcadeIndex++;
+            renderArcade();
+        }
+
+        // ---------------------------------------------------------------
+        // COPIA DE SEGURIDAD
+        // ---------------------------------------------------------------
+        function exportBackup() {
+            const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `geohist-recuperacion-copia-${new Date().toISOString().slice(0,10)}.json`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            showToast('Copia de seguridad descargada.', 'success');
+        }
+
+        function importBackup(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const imported = JSON.parse(reader.result);
+                    if (!imported || typeof imported.students !== 'object') throw new Error('Formato no válido');
+                    if (!confirm('Esta restauración sustituirá los datos guardados. ¿Continuar?')) return;
+                    if (window.FIREBASE_ENABLED) {
+                        window.__dbSet(window.__studentsRef, imported.students);
+                    } else {
+                        state = imported;
+                        persistLocalState();
+                        renderStudentSelector();
+                    }
+                    hydrateActiveStudent(); renderTeacherPanel();
+                    showToast('Copia restaurada correctamente.', 'success');
+                } catch (_) { showToast('El archivo no es una copia válida.', 'error'); }
+                document.getElementById('backup-file').value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // ---------------------------------------------------------------
+        // ARRANQUE
+        // ---------------------------------------------------------------
+        if (!window.FIREBASE_ENABLED) loadLocalState();
+        renderMapActivities();
+        renderStudentSelector();
+        hydrateActiveStudent();
+        renderArcade();
+    </script>
+</body>
+</html>
